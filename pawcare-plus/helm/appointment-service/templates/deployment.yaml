@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "appointment-service.fullname" . }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "appointment-service.name" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "appointment-service.name" . }}
+    spec:
+      containers:
+      - name: appointment-service
+        image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        ports:
+        - containerPort: 8000
+        env:
+        - name: DATABASE_URL
+          value: postgresql+asyncpg://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)
+        - name: NOTIFICATION_SERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "appointment-service.fullname" . }}-config
+              key: notificationServiceUrl
+        - name: DB_USER
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "appointment-service.fullname" . }}-config
+              key: dbUser
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "appointment-service.fullname" . }}-secret
+              key: dbPassword
+        - name: DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "appointment-service.fullname" . }}-config
+              key: dbHost
+        - name: DB_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "appointment-service.fullname" . }}-config
+              key: dbPort
+        - name: DB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "appointment-service.fullname" . }}-config
+              key: dbName
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        resources:
+          {{- toYaml .Values.resources | nindent 12 }}

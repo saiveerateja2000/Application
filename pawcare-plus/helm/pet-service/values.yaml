@@ -1,0 +1,28 @@
+replicaCount: 1
+
+image:
+  repository: pet-service
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8000
+
+config:
+  dbHost: postgres
+  dbPort: "5432"
+  dbName: pawcare
+  dbUser: pawcare_user
+
+secret:
+  dbPassword: pawcare_password
+
+resources: {}
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

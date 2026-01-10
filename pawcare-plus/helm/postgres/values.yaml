@@ -1,0 +1,31 @@
+replicaCount: 1
+
+image:
+  repository: postgres
+  tag: "15"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 5432
+  targetPort: 5432
+
+config:
+  dbName: pawcare
+  dbUser: pawcare_user
+
+secret:
+  dbPassword: pawcare_password
+
+persistence:
+  enabled: true
+  size: 8Gi
+  storageClass: ""
+
+resources: {}
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

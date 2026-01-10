@@ -1,0 +1,82 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: pawcare
+      POSTGRES_USER: pawcare_user
+      POSTGRES_PASSWORD: pawcare_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pawcare_user -d pawcare"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  pet-service:
+    build: ./services/pet-service
+    ports:
+      - "8001:8000"
+    environment:
+      - DATABASE_URL=postgresql://pawcare_user:pawcare_password@postgres:5432/pawcare
+      - SERVICE_NAME=pet-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  appointment-service:
+    build: ./services/appointment-service
+    ports:
+      - "8002:8000"
+    environment:
+      - DATABASE_URL=postgresql://pawcare_user:pawcare_password@postgres:5432/pawcare
+      - SERVICE_NAME=appointment-service
+      - NOTIFICATION_SERVICE_URL=http://notification-service:8000
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  notification-service:
+    build: ./services/notification-service
+    ports:
+      - "8003:8000"
+    environment:
+      - DATABASE_URL=postgresql://pawcare_user:pawcare_password@postgres:5432/pawcare
+      - SERVICE_NAME=notification-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_PET_API_BASE=http://pet-service:8000
+      - REACT_APP_APPOINTMENT_API_BASE=http://appointment-service:8000
+    depends_on:
+      - pet-service
+      - appointment-service
+      - notification-service
+
+volumes:
+  postgres_data:
