@@ -22,7 +22,7 @@ services:
     ports:
       - "8001:8000"
     environment:
-      - DATABASE_URL=postgresql://pawcare_user:pawcare_password@postgres:5432/pawcare
+      - DATABASE_URL=postgresql+asyncpg://pawcare_user:pawcare_password@postgres:5432/pawcare
       - SERVICE_NAME=pet-service
     depends_on:
       postgres:
@@ -38,7 +38,7 @@ services:
     ports:
       - "8002:8000"
     environment:
-      - DATABASE_URL=postgresql://pawcare_user:pawcare_password@postgres:5432/pawcare
+      - DATABASE_URL=postgresql+asyncpg://pawcare_user:pawcare_password@postgres:5432/pawcare
       - SERVICE_NAME=appointment-service
       - NOTIFICATION_SERVICE_URL=http://notification-service:8000
     depends_on:
@@ -55,7 +55,7 @@ services:
     ports:
       - "8003:8000"
     environment:
-      - DATABASE_URL=postgresql://pawcare_user:pawcare_password@postgres:5432/pawcare
+      - DATABASE_URL=postgresql+asyncpg://pawcare_user:pawcare_password@postgres:5432/pawcare
       - SERVICE_NAME=notification-service
     depends_on:
       postgres:
