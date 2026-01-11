@@ -69,7 +69,7 @@ services:
   frontend:
     build: ./frontend
     ports:
-      - "3000:3000"
+      - "3000:80"
     environment:
       - REACT_APP_PET_API_BASE=http://pet-service:8000
       - REACT_APP_APPOINTMENT_API_BASE=http://appointment-service:8000
